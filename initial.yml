@@ -1,0 +1,23 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: allow '{{ ansible_user }}' to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    # - name: set up authorized keys for the {{ ansible_user }} user
+    #   authorized_key: user={{ ansible_user }} key="{{item}}"
+    #   with_file:
+    #     - ~/.ssh/id_rsa.pub
+
+    - name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+      shell: swapoff -a
+    
+    - name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+      replace:
+        path: /etc/fstab
+        regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+        replace: '# \1'
