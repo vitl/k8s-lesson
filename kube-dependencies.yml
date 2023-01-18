@@ -109,3 +109,12 @@
       name: kubectl=1.26.0-00
       state: present
       force: yes
+  - name: Install bash-completion
+    apt:
+      name: bash-completion 
+      state: present
+  - name: install kubectl completion for bash
+    shell:
+      cmd: kubectl completion bash > /etc/bash_completion.d/kubectl
+      # If you do not want to run this when the file already exists, add
+      creates: /etc/bash_completion.d/kubectl
