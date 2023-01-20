@@ -1,13 +1,12 @@
-# comment
-
 [control_plane]
-control1 ansible_host=192.168.1.6 ansible_user=vitl
+control1 ansible_host=192.168.102.10 ansible_user=vitl
 
 [workers]
-#worker1 ansible_host=192.168.1.15 ansible_user=vitl
-#worker2 ansible_host=192.168.1.13 ansible_user=vitl
-worker3 ansible_host=195.135.212.89 ansible_user=ubuntu
+worker1 ansible_host=192.168.102.11 ansible_user=vitl
+worker2 ansible_host=10.1.1.186 ansible_user=vitl
+# worker3 ansible_host=195.135.212.89 ansible_user=ubuntu
 
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
