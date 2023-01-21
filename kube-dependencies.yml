@@ -90,15 +90,15 @@
         update_cache: yes
       vars:
         packages:
-        - kubelet=1.26.0-00
-        - kubeadm=1.26.0-00
+        - kubelet=1.26.1-00
+        - kubeadm=1.26.1-00
 
 - hosts: control_plane
   become: yes
   tasks:
   - name: install kubectl
     apt:
-      name: kubectl=1.26.0-00
+      name: kubectl=1.26.1-00
       state: present
       force: yes
 
