@@ -83,7 +83,7 @@
         state: present
         filename: 'kubernetes'
 
-    - name: Install kubernetes utilties
+    - name: Install kubelet, kubeadm
       apt:
         name: "{{ packages }}"
         state: present
@@ -93,6 +93,16 @@
         - kubelet=1.26.1-00
         - kubeadm=1.26.1-00
 
+    - name: Hold kubelet
+      dpkg_selections:
+        name: kubelet
+        selection: hold
+
+    - name: Hold kubeadm
+      dpkg_selections:
+        name: kubeadm
+        selection: hold
+
 - hosts: control_plane
   become: yes
   tasks:
@@ -101,6 +111,11 @@
       name: kubectl=1.26.1-00
       state: present
       force: yes
+
+  - name: Hold kubectl
+    dpkg_selections:
+      name: kubectl
+      selection: hold
 
   - name: Install bash-completion
     apt:
