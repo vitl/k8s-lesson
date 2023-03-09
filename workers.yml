@@ -1,5 +1,5 @@
 ---
-- hosts: control_plane
+- hosts: master
   become: yes
   gather_facts: false
   tasks:

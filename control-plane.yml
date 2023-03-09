@@ -1,9 +1,9 @@
 ---
-- hosts: control_plane
+- hosts: master
   become: yes
   tasks:
     - name: initialize the cluster
-      shell: kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
+      shell: kubeadm init --control-plane-endpoint "k8s.comp" --pod-network-cidr=10.244.0.0/16 --upload-certs >> cluster_initialized.txt
       args:
         chdir: $HOME
         creates: cluster_initialized.txt

@@ -1,11 +1,18 @@
 [control_plane]
 control1 ansible_host=192.168.102.10 ansible_user=vitl
+# control1 ansible_host=192.168.1.7 ansible_user=vitl
+# control2 ansible_host=192.168.1.8 ansible_user=vitl
+# control3 ansible_host=192.168.1.9 ansible_user=vitl
+
+# [master]
+control1
 
 [workers]
-worker1 ansible_host=192.168.102.11 ansible_user=vitl
-worker2 ansible_host=192.168.102.12 ansible_user=vitl
+test1 ansible_host=192.168.102.30 ansible_user=vitl
+# worker1 ansible_host=192.168.1.70 ansible_user=vitl
+# worker2 ansible_host=192.168.1.71 ansible_user=vitl
+# worker3 ansible_host=192.168.1.33 ansible_user=vitl
 # vtest ansible_host=195.135.212.89 ansible_user=ubuntu
-
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
