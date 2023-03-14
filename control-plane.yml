@@ -1,13 +1,58 @@
 ---
-- hosts: master
+- hosts: control_plane
+  become: yes
+  tasks:
+    - name: get kube-vip image
+      shell: ctr image pull ghcr.io/kube-vip/kube-vip:{{ kube_vip_version }}
+
+    - name: generate kube-vip manifest
+      shell: ctr run --rm --net-host ghcr.io/kube-vip/kube-vip:{{ kube_vip_version }} vip /kube-vip \ 
+        manifest pod \
+        --interface {{ ansible_default_ipv4.interface }} \
+        --address {{ cluster_ip }} \
+        --controlplane \
+        --services \
+        --arp \
+        --leaderElection | tee /etc/kubernetes/manifests/kube-vip.yaml
+
+- hosts: control_plane[0]
   become: yes
   tasks:
     - name: initialize the cluster
-      shell: kubeadm init --control-plane-endpoint "k8s.comp" --pod-network-cidr=10.244.0.0/16 --upload-certs >> cluster_initialized.txt
+      shell: kubeadm init --control-plane-endpoint "{{ cluster_ip }}" --pod-network-cidr={{ network_cidr }} --upload-certs >> cluster_initialized.txt
       args:
         chdir: $HOME
         creates: cluster_initialized.txt
 
+    - name: store join content
+      shell: cat $HOME/cluster_initialized.txt
+      register: results_raw
+    
+    - name: get join command
+      shell: kubeadm token create --print-join-command --certificate-key {{ certificate_key[0] }}
+      register: join_command_raw
+      vars:
+        certificate_key: "{{ results_raw.stdout | regex_search(regexp,'\\1') }}"
+        regexp: "--certificate-key(?:\\s*)(\\S+)"
+
+    - name: set join command
+      set_fact:
+        join_control_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+- hosts: control_plane:!control_plane[0]
+  become: yes
+  tasks:
+    - name: join to cluster
+      shell: "{{ hostvars[first_control].join_control_command }} >> node_joined.txt"
+      args:
+        chdir: $HOME
+        creates: node_joined.txt
+      vars:
+        first_control: "{{ groups['control_plane'][0] }}"
+
+- hosts: control_plane
+  become: yes
+  tasks:
     - name: create .kube directory
       become: yes
       become_user: '{{ ansible_user }}'
@@ -23,10 +68,13 @@
         remote_src: yes
         owner: '{{ ansible_user }}'
 
-    - name: install Pod network
+- hosts: control_plane[0]
+  become: yes
+  tasks:
+    - name: install Calico CNI
       become: yes
       become_user: '{{ ansible_user }}'
-      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+      shell: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml >> pod_network_setup.txt && kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml >> pod_network_setup.txt
       args:
         chdir: $HOME
         creates: pod_network_setup.txt

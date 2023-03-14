@@ -1,5 +1,5 @@
 ---
-- hosts: master
+- hosts: control_plane[0]
   become: yes
   gather_facts: false
   tasks:
@@ -20,3 +20,5 @@
       args:
         chdir: $HOME
         creates: node_joined.txt
+      vars:
+        first_control: "{{ groups['control_plane'][0] }}"

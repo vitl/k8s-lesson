@@ -21,3 +21,11 @@
         path: /etc/fstab
         regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
         replace: '# \1'
+    - name: Disable cloud-init
+      copy:
+        content: ""
+        dest: /etc/cloud/cloud-init.disabled
+        force: false
+        group: root
+        owner: root
+        mode: 0555

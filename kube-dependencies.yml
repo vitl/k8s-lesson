@@ -80,7 +80,11 @@
       shell: containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
 
     - name: fix containerd config
-      shell: sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+    #   shell: sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
 
     - name: Restart service containerd, in all cases
       ansible.builtin.systemd:
@@ -96,8 +100,8 @@
         cache_valid_time: 3600
       vars:
         packages:
-        - kubelet=1.26.1-00
-        - kubeadm=1.26.1-00
+        - kubelet={{ kubernetes_version }}
+        - kubeadm={{ kubernetes_version }}
 
     - name: Hold kubelet
       dpkg_selections:
@@ -114,7 +118,7 @@
   tasks:
   - name: install kubectl
     ansible.builtin.apt:
-      name: kubectl=1.26.1-00
+      name: kubectl={{ kubernetes_version }}
       state: present
       force: yes
 
